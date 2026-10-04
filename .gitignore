@@ -1,2 +1,5 @@
 node_modules
+baza.db
+baza.db-wal
+baza.db-shm
 data.json
