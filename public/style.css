@@ -174,3 +174,6 @@ a.chip{text-decoration:none;display:inline-block}
 .pitch .dsh{stroke-dasharray:.024 .02;stroke-dashoffset:0;animation:fadein .9s var(--ease) .5s both}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 .pitch .ln:nth-child(n+7){animation-delay:.9s}
+
+/* actualizările automate nu mai reiau animația de intrare (fără pâlpâire) */
+.quiet .slot,.quiet .row{animation:none}

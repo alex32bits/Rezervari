@@ -2,11 +2,11 @@ const $ = s => document.querySelector(s);
 const ZILE = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
 const LOOK = { // culoare + emoji + desenul terenului (linii animate)
   minifotbal: { c:'#2f7d4f', e:'⚽', svg:`<rect x="10" y="10" width="280" height="160" rx="4"/><path d="M150 10v160"/><circle cx="150" cy="90" r="28"/><path d="M10 55h38v70H10M290 55h-38v70h38"/>` },
-  handbal:    { c:'#2b5fa8', e:'🤾', svg:`<rect x="10" y="10" width="280" height="160" rx="4"/><path d="M150 10v160"/><path d="M10 40a60 60 0 0 1 60 50 60 60 0 0 1-60 50M290 40a60 60 0 0 0-60 50 60 60 0 0 0 60 50"/>` },
-  baschet:    { c:'#c97d1f', e:'🏀', svg:`<rect x="10" y="10" width="280" height="160" rx="4"/><path d="M150 10v160"/><circle cx="150" cy="90" r="26"/><path d="M10 60h60v60H10M290 60h-60v60h60"/>` },
-  tenis:      { c:'#b5532f', e:'🎾', svg:`<rect x="30" y="10" width="240" height="160" rx="2"/><path d="M30 38h240M30 142h240M150 38v104M150 10v160M92 38v104"/>` },
+  handbal:    { c:'#2b5fa8', e:'🤾', svg:`<rect x="15" y="22.5" width="270" height="135"/><path d="M150 22.5v135"/><path d="M15 39.4A40.5 40.5 0 0 1 55.5 79.9V100.1A40.5 40.5 0 0 1 15 140.6M285 39.4A40.5 40.5 0 0 0 244.5 79.9V100.1A40.5 40.5 0 0 0 285 140.6"/><path dash d="M34.9 22.5A60.75 60.75 0 0 1 75.75 79.9V100.1A60.75 60.75 0 0 1 34.9 157.5M265.1 22.5A60.75 60.75 0 0 0 224.25 79.9V100.1A60.75 60.75 0 0 0 265.1 157.5"/><path d="M15 79.9h-5v20.2h5M285 79.9h5v20.2h-5"/><path d="M62.25 86.6v6.8M237.75 86.6v6.8"/>` },
+  baschet:    { c:'#c97d1f', e:'🏀', svg:`<rect x="15" y="17.7" width="270" height="144.6"/><path d="M150 17.7v144.6M150 72.6a17.4 17.4 0 1 0 0 34.8a17.4 17.4 0 1 0 0-34.8"/><path d="M15 66.4H70.9V113.6H15M285 66.4H229.1V113.6H285"/><path d="M15 26.4H44.1A65.1 65.1 0 0 1 44.1 153.6H15M285 26.4H255.9A65.1 65.1 0 0 0 255.9 153.6H285"/><path d="M70.9 72.6A17.4 17.4 0 0 1 70.9 107.4M229.1 72.6A17.4 17.4 0 0 0 229.1 107.4M15 77.95h15.2A12.05 12.05 0 0 1 30.2 102.05H15M285 77.95h-15.2A12.05 12.05 0 0 0 269.8 102.05H285M26.6 81.3v17.4M273.4 81.3v17.4"/><path dash d="M70.9 72.6A17.4 17.4 0 0 0 70.9 107.4M229.1 72.6A17.4 17.4 0 0 1 229.1 107.4"/><circle cx="30.2" cy="90" r="3"/><circle cx="269.8" cy="90" r="3"/>` },
+  tenis:      { c:'#b5532f', e:'🎾', svg:`<rect x="15" y="28" width="270" height="124"/><path d="M15 43.5h270M15 136.5h270"/><path d="M77 43.5v93M223 43.5v93M77 90h146"/><path d="M150 22v136"/><path d="M15 90h7M285 90h-7"/>` },
 };
-let blocks = [];
+let blocks = [], bookSig = '', quiet = false;
 const blockFor = (c, d, s) => blocks.find(b => b.court === c && b.date === d && (!b.start || b.start === s));
 let cfg, me, mode = 'login', court, day, bookings = [], justKey = null;
 
@@ -70,7 +70,14 @@ async function start() {
   setInterval(() => load(true), 8000); checkUnread(); setInterval(checkUnread, 6000); // actualizare automată: vezi rezervările celorlalți
 }
 async function load(silent) {
-  try { [bookings, blocks] = await Promise.all([api('/api/bookings'), api('/api/blocks')]); render(); }
+  try {
+    const [b, bl] = await Promise.all([api('/api/bookings'), api('/api/blocks')]);
+    // la actualizarea automată (silent) redesenăm doar dacă s-a schimbat ceva (sau a trecut un minut)
+    const sig = JSON.stringify([b, bl]) + new Date().toISOString().slice(0, 16);
+    if (silent && sig === bookSig) return;
+    bookSig = sig; bookings = b; blocks = bl;
+    quiet = !!silent; render(); quiet = false; // fără animații de intrare la actualizările automate
+  }
   catch (e) { if (e.status === 401) location.reload(); else if (!silent) toast(e.message); }
 }
 
@@ -80,7 +87,7 @@ function drawHeader() {
   document.documentElement.style.setProperty('--court', L.c);
   $('#cname').textContent = c.name;
   $('#cdate').textContent = longDate(day);
-  $('#pitch').innerHTML = `<svg viewBox="0 0 300 180">${L.svg.replace(/<(rect|path|circle)/g, '<$1 class="ln" pathLength="1"')}</svg>`;
+  $('#pitch').innerHTML = `<svg viewBox="0 0 300 180">${L.svg.replace(/<(rect|path|circle)(\s+dash)?/g, (m, t, d) => `<${t} class="ln${d ? ' dsh' : ''}" pathLength="1"`)}</svg>`;
 }
 function renderTabs() {
   $('#courts').innerHTML = cfg.courts.map(c => `<button class="court-btn ${c.id===court?'on':''}" style="--cc:${LOOK[c.id].c}" data-c="${c.id}"><span>${LOOK[c.id].e}</span>${c.name}<small data-n="${c.id}"></small></button>`).join('');
@@ -93,6 +100,7 @@ function renderDays() {
 }
 function renderSlots() {
   const c = cfg.courts.find(x => x.id === court);
+  $('#slots').classList.toggle('quiet', quiet);
   $('#slots').innerHTML = c.slots.map(([a, b], i) => {
     const bk = bookings.find(x => x.court === court && x.date === day && x.start === a), p = past(day, a);
     let cls = 'slot', st, btn = '';
@@ -108,6 +116,7 @@ function renderSlots() {
 }
 function renderMine() {
   const m = bookings.filter(b => b.uid === me.id && !past(b.date, b.start)).sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+  $('#mine').classList.toggle('quiet', quiet);
   $('#mine').innerHTML = m.length ? m.map((b, i) => `<div class="row" style="animation-delay:${i*50}ms"><span><b>${esc(cfg.courts.find(c => c.id === b.court).name)}</b> · ${longDate(b.date)} · ${b.start}–${b.end}</span><span class="rb"><button class="chip" data-ics="${b.id}">📅 Calendar</button><button class="act del" data-del="${b.id}">Șterge</button></span></div>`).join('')
     : '<p class="empty">Nu ai nicio rezervare activă. Alege un interval liber de mai sus.</p>';
   $('#cnt').textContent = `(${m.length}/${cfg.maxActive})`;
