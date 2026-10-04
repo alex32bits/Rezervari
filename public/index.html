@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baza Sportivă – Rezervări</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap bar">
+    <div class="brand"><span class="ball">⚽</span><div><h1>Baza Sportivă</h1><p>Rezervări teren</p></div></div>
+    <div class="user"><button id="contactBtn" class="ghost">✉ Contact</button><span id="uname" hidden></span><button id="logout" class="ghost" hidden>Ieșire</button></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="auth" class="auth" hidden>
+    <div class="auth-card">
+      <h2 id="authTitle" hidden></h2>
+      <div class="auth-tabs" id="authTabs"><button data-m="login" class="on">Autentificare</button><button data-m="register">Cont nou</button></div>
+      <form id="form" novalidate>
+        <label id="nameRow" hidden>Nume<input name="name" autocomplete="name" placeholder="Ion Popescu"></label>
+        <label id="emailRow">Email<input name="email" type="email" autocomplete="email" placeholder="nume@email.ro" required></label>
+        <label id="passRow"><span id="passLbl">Parolă</span><input name="password" type="password" autocomplete="current-password" placeholder="minim 6 caractere" required></label>
+        <p id="err" class="err" role="alert"></p>
+        <p id="info" class="ok" role="status"></p>
+        <button class="btn" id="submit">Intră în cont</button>
+        <button type="button" id="forgotLink" class="lnk2">Ai uitat parola?</button>
+        <button type="button" id="back" class="lnk2" hidden>← Înapoi la autentificare</button>
+      </form>
+    </div>
+  </section>
+
+  <section id="main" hidden>
+    <nav class="views" aria-label="Secțiuni">
+      <button data-view="book" class="on">📅 Rezervări</button>
+      <button data-view="admin" id="adminTab" hidden>🛠 Admin</button>
+      <button data-view="chat">💬 Chat parteneri <b class="badge" id="chatBadge" hidden></b></button>
+    </nav>
+    <div id="bookView">
+      <div id="next" class="next" hidden></div>
+    <nav id="courts" class="courts" aria-label="Terenuri"></nav>
+    <div class="stage">
+      <div class="pitch" id="pitch"></div>
+      <div class="info"><h2 id="cname"></h2><p id="cdate"></p></div>
+    </div>
+    <nav id="days" class="days" aria-label="Zile"></nav>
+    <div id="slots" class="slots"></div>
+    <h3>Rezervările mele <small id="cnt"></small></h3>
+    <div id="mine" class="mine"></div>
+    </div>
+
+    <div id="chatView" hidden>
+      <nav id="rooms" class="courts" aria-label="Grupuri"></nav>
+      <div class="chat">
+        <h2 id="chatTitle"></h2>
+        <p class="sub">Caută parteneri de joc sau anunță că mai ai nevoie de oameni. Toți utilizatorii văd mesajele din grup.</p>
+        <div id="msgs" class="msgs" aria-live="polite"></div>
+        <div class="chips">
+          <button type="button" class="chip" data-tpl="search">🔎 Caut jucători</button>
+          <button type="button" class="chip" data-tpl="need">🙋 Mai avem nevoie de oameni</button>
+        </div>
+        <form id="chatForm">
+          <textarea name="text" rows="2" maxlength="500" placeholder="Scrie un mesaj… (Enter trimite, Shift+Enter rând nou)"></textarea>
+          <button class="act">Trimite</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="adminView" hidden>
+      <div class="stats" id="stats"></div>
+      <nav class="atabs" id="atabs" aria-label="Administrare">
+        <button data-at="bk" class="on">📅 Rezervări</button>
+        <button data-at="bl">🔧 Blocări</button>
+        <button data-at="ms">✉ Mesaje</button>
+        <button data-at="us">👥 Utilizatori</button>
+      </nav>
+      <div id="apanel" class="apanel"></div>
+    </div>
+  </section>
+</main>
+<dialog id="contact" class="modal">
+  <form method="dialog" class="x"><button aria-label="Închide">✕</button></form>
+  <h2>Contactează administratorul</h2>
+  <p class="sub" id="cname2"></p>
+  <div class="links"><a id="cphone" class="act">📞</a><a id="cmail" class="act">✉</a></div>
+  <form id="msgForm" hidden>
+    <label>Sau scrie-ne un mesaj<textarea name="message" rows="4" maxlength="1000" placeholder="Ex: Vreau să anulez o rezervare / am o problemă cu contul…"></textarea></label>
+    <p id="merr" class="err" role="alert"></p>
+    <button class="btn">Trimite mesajul</button>
+  </form>
+  <p id="msgHint" class="sub" hidden>Autentifică-te pentru a trimite un mesaj direct din site.</p>
+</dialog>
+<div id="toast" class="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
