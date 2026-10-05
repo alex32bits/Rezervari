@@ -8,8 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script>try{if(sessionStorage.getItem("splashed"))document.documentElement.classList.add("nosplash")}catch(e){}</script>
 </head>
 <body>
+<div id="splash" aria-hidden="true"><div class="sp"><span class="sp-ball">⚽</span><div class="sp-shadow"></div><h1 class="sp-title">Baza Sportivă</h1></div></div>
 <header class="top">
   <div class="wrap bar">
     <div class="brand"><span class="ball">⚽</span><div><h1>Baza Sportivă</h1><p>Rezervări teren</p></div></div>
@@ -17,24 +19,50 @@
   </div>
 </header>
 
-<main class="wrap">
-  <section id="auth" class="auth" hidden>
-    <div class="auth-card">
-      <h2 id="authTitle" hidden></h2>
-      <div class="auth-tabs" id="authTabs"><button data-m="login" class="on">Autentificare</button><button data-m="register">Cont nou</button></div>
-      <form id="form" novalidate>
-        <label id="nameRow" hidden>Nume<input name="name" autocomplete="name" placeholder="Ion Popescu"></label>
-        <label id="emailRow">Email<input name="email" type="email" autocomplete="email" placeholder="nume@email.ro" required></label>
-        <label id="passRow"><span id="passLbl">Parolă</span><input name="password" type="password" autocomplete="current-password" placeholder="minim 6 caractere" required></label>
-        <p id="err" class="err" role="alert"></p>
-        <p id="info" class="ok" role="status"></p>
-        <button class="btn" id="submit">Intră în cont</button>
-        <button type="button" id="forgotLink" class="lnk2">Ai uitat parola?</button>
-        <button type="button" id="back" class="lnk2" hidden>← Înapoi la autentificare</button>
-      </form>
+<div id="landing" hidden>
+  <section class="hero" id="hero">
+    <div class="hero-photos" id="heroPhotos"></div>
+    <div class="stars" id="stars" aria-hidden="true"></div>
+    <div class="hero-art" id="art" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div>
+        <p class="kick">Rezervări online · baza sportivă</p>
+        <h2 class="hero-title"><span class="split">Terenul tău,</span><br><span class="split gold">la un click.</span></h2>
+        <p class="sport-line">Rezervă acum un teren de <span class="rot"><b>Minifotbal</b><i style="--k:0;--c:#6ee7a0">minifotbal</i><i style="--k:1;--c:#7db4ff">handbal</i><i style="--k:2;--c:#ffb24d">baschet</i><i style="--k:3;--c:#ff8a65">tenis</i></span></p>
+        <button class="cta" data-go="auth">Rezervă acum <span>→</span></button>
+        <div class="hstats"><div><b data-n="4">0</b><small>terenuri</small></div><div><b data-n="16">0</b><small>intervale pe zi</small></div><div><b data-n="7">0</b><small>zile în avans</small></div></div>
+      </div>
+    <section id="auth" class="auth" hidden>
+      <div class="auth-card">
+        <h2 id="authTitle" hidden></h2>
+        <div class="auth-tabs" id="authTabs"><button data-m="login" class="on">Autentificare</button><button data-m="register">Cont nou</button></div>
+        <form id="form" novalidate>
+          <label id="nameRow" hidden>Nume<input name="name" autocomplete="name" placeholder="Ion Popescu"></label>
+          <label id="emailRow">Email<input name="email" type="email" autocomplete="email" placeholder="nume@email.ro" required></label>
+          <label id="passRow"><span id="passLbl">Parolă</span><input name="password" type="password" autocomplete="current-password" placeholder="minim 6 caractere" required></label>
+          <p id="err" class="err" role="alert"></p>
+          <p id="info" class="ok" role="status"></p>
+          <button class="btn" id="submit">Intră în cont</button>
+          <button type="button" id="forgotLink" class="lnk2">Ai uitat parola?</button>
+          <button type="button" id="back" class="lnk2" hidden>← Înapoi la autentificare</button>
+        </form>
+      </div>
+    </section>
+    </div>
+    <div class="hint" aria-hidden="true">⌄</div>
+  </section>
+  <section class="wrap sec"><h2 class="rv">Alege-ți terenul</h2><p class="lead rv">Patru terenuri, același drum simplu: alegi ziua, vezi ce e liber și rezervi.</p><div class="cards" id="showcase"></div></section>
+  <section class="wrap sec"><h2 class="rv">Cum funcționează</h2><p class="lead rv">Trei pași și ești pe teren.</p>
+    <div class="steps">
+      <div class="step rv"><b>1</b><h3>Creează un cont</h3><p>Durează jumătate de minut: nume, email și o parolă.</p></div>
+      <div class="step rv" style="--d:.1s"><b>2</b><h3>Alege terenul și ora</h3><p>Vezi în timp real ce e liber și rezervi cu un click.</p></div>
+      <div class="step rv" style="--d:.2s"><b>3</b><h3>Joacă!</h3><p>Ai nevoie de parteneri? Postează în chatul fiecărui sport.</p></div>
     </div>
   </section>
+  <section class="band rv"><h2>Gata de joc?</h2><p>Terenul liber te așteaptă.</p><button class="cta" data-go="auth">Intră în cont</button></section>
+</div>
 
+<main class="wrap">
   <section id="main" hidden>
     <nav class="views" aria-label="Secțiuni">
       <button data-view="book" class="on">📅 Rezervări</button>

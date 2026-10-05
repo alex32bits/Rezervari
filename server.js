@@ -76,11 +76,13 @@ const cleanup = () => {
 };
 cleanup(); setInterval(cleanup, 864e5).unref();
 
+// ---- Server HTTP + API REST ----
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware pentru autentificare: verifică tokenul JWT din cookie și atașează userul la req.user
 const auth = (req, res, next) => {
   try {
     const { id, ver } = jwt.verify(req.cookies.token, SECRET);
@@ -95,7 +97,7 @@ const login = (res, user) => {
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 30 * 864e5 });
   res.json({ id: user.id, name: user.name, isAdmin: isAdmin(user) });
 };
-
+// ---- Rute API pentru clientul web ----
 app.post('/api/register', (req, res) => {
   const { name = '', email = '', password = '' } = req.body;
   if (name.trim().length < 2) return res.status(400).json({ error: 'Introdu un nume (minim 2 caractere).' });

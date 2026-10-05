@@ -177,3 +177,107 @@ a.chip{text-decoration:none;display:inline-block}
 
 /* actualizările automate nu mai reiau animația de intrare (fără pâlpâire) */
 .quiet .slot,.quiet .row{animation:none}
+
+/* ====== Intro, hero animat, secțiuni ====== */
+:root{--intro:0s}
+html{scroll-behavior:smooth}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* Splash: mingea sare, apoi cortina se ridică */
+#splash{position:fixed;inset:0;z-index:200;background:radial-gradient(circle at 50% 40%,#17303f,#070d14 70%);display:grid;place-items:center;transition:transform .9s cubic-bezier(.7,0,.2,1)}
+#splash.out{transform:translateY(-100%)}
+.nosplash #splash{display:none}
+.sp{text-align:center}
+.sp-ball{display:block;font-size:5rem;animation:drop 1.4s cubic-bezier(.3,0,.7,1) both}
+@keyframes drop{0%{transform:translateY(-60vh) rotate(0)}35%{transform:translateY(0) rotate(360deg)}50%{transform:translateY(-90px) rotate(520deg)}65%{transform:translateY(0) rotate(680deg)}78%{transform:translateY(-34px) rotate(760deg)}90%,100%{transform:translateY(0) rotate(820deg)}}
+.sp-shadow{width:80px;height:12px;border-radius:50%;background:rgba(0,0,0,.55);margin:-4px auto 18px;animation:sh 1.4s both}
+@keyframes sh{0%{transform:scale(.2);opacity:0}35%{transform:scale(1);opacity:.6}50%{transform:scale(.55);opacity:.3}65%{transform:scale(1);opacity:.6}78%{transform:scale(.8)}100%{transform:scale(1);opacity:.6}}
+.sp-title{font-size:clamp(2rem,6vw,3.4rem);color:#fff;letter-spacing:3px;text-transform:uppercase;animation:fadeUp .7s .9s both}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;color:#fff;display:flex;align-items:center;min-height:calc(100vh - 70px);min-height:calc(100svh - 70px);background:linear-gradient(#070d14,#0f1b24 55%,#10301f);--mx:0;--my:0}
+.hero-photos,.stars,.hero-art{position:absolute;inset:0}
+.hero-photos{opacity:.6}   /* tonul se aplică pe tot grupul, ca fundul să nu se vadă la tranziție */
+.hero-photos .ph{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.04);will-change:opacity,transform}
+.hero-photos .ph:nth-child(3n+1){transform-origin:50% 50%}
+.hero-photos .ph:nth-child(3n+2){transform-origin:22% 35%}
+.hero-photos .ph:nth-child(3n){transform-origin:78% 65%}
+/* aceeași animație pe .on și .prev, ca zoom-ul să continue fără salt cât timp poza dispare */
+.hero-photos .ph.on,.hero-photos .ph.prev{animation:kb 11s linear forwards}
+.hero-photos .ph.on{opacity:1;z-index:2;transition:opacity 1.8s ease-in-out}
+.hero-photos .ph.prev{opacity:1;z-index:1}
+@keyframes kb{from{transform:scale(1.04)}to{transform:scale(1.14)}}
+.has-photos::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(7,13,20,.88),rgba(7,13,20,.3) 65%,rgba(7,13,20,.6));pointer-events:none}
+.has-photos .hero-art{opacity:.45}
+.stars{transform:translate(calc(var(--mx)*10px),calc(var(--my)*6px));transition:transform .25s ease-out}
+.stars i{position:absolute;width:var(--s);height:var(--s);border-radius:50%;background:#fff;opacity:.25;animation:tw 3s var(--d) ease-in-out infinite alternate}
+@keyframes tw{to{opacity:1}}
+.hero-art{transform:translate(calc(var(--mx)*-18px),calc(var(--my)*-10px)) scale(1.05);transition:transform .25s ease-out}
+.hero-art svg{width:100%;height:100%;display:block}
+.beam,.lamp{opacity:0;animation:lampOn 1.6s calc(var(--intro) + var(--d)) forwards,breath 6s calc(var(--intro) + 3s) ease-in-out infinite}
+@keyframes lampOn{0%{opacity:0}8%{opacity:.9}12%{opacity:.1}18%{opacity:1}24%{opacity:.35}32%,100%{opacity:1}}
+@keyframes breath{50%{opacity:.78}}
+.gl{fill:none;stroke:rgba(255,255,255,.35);stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.2s calc(var(--intro) + .6s) var(--ease) forwards}
+.fb{position:absolute;z-index:2;left:var(--x);top:var(--y);font-size:var(--sz);transform:translate(calc(var(--mx)*var(--k)*1px),calc(var(--my)*var(--k)*1px));transition:transform .25s ease-out;filter:drop-shadow(0 12px 14px rgba(0,0,0,.5))}
+.fb span{display:block;animation:bob var(--t) ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(0) rotate(-12deg)}to{transform:translateY(-26px) rotate(14deg)}}
+.hero-grid{position:relative;z-index:3;display:grid;grid-template-columns:1.1fr .9fr;gap:36px;align-items:center;padding-top:40px;padding-bottom:70px;width:100%}
+.kick{margin:0 0 10px;letter-spacing:3px;text-transform:uppercase;font-size:.8rem;color:#ffd666;animation:fadeUp .7s calc(var(--intro) + .1s) both}
+.hero-title{font-size:clamp(2.6rem,7vw,5rem);line-height:.98;margin:0 0 16px;text-transform:uppercase;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+.hero-title .w{display:inline-block;white-space:nowrap}
+.hero-title .w span{display:inline-block;animation:letter .7s calc(var(--intro) + .25s + var(--i)*45ms) cubic-bezier(.2,1.4,.4,1) both}
+.gold{color:#ffd666}
+@keyframes letter{from{opacity:0;transform:translateY(40px) rotate(8deg) scale(.6)}to{opacity:1;transform:none}}
+.sport-line{font-size:1.25rem;margin:0 0 24px;color:#d7e3ea;animation:fadeUp .7s calc(var(--intro) + 1s) both}
+.rot{display:inline-block;position:relative;height:1.35em;vertical-align:bottom;overflow:hidden;font-weight:700}
+.rot b{visibility:hidden}
+.rot i{position:absolute;left:0;top:0;font-style:normal;white-space:nowrap;color:var(--c);opacity:0;animation:word 8s calc(var(--intro) + 1.2s + var(--k)*2s) infinite}
+@keyframes word{0%{transform:translateY(100%);opacity:0}4%,22%{transform:none;opacity:1}26%,100%{transform:translateY(-100%);opacity:0}}
+.cta{display:inline-flex;gap:8px;align-items:center;border:0;border-radius:99px;padding:14px 26px;font-weight:700;font-size:1.05rem;color:#1a1200;background:linear-gradient(135deg,#ffd666,#f5a30a);box-shadow:0 10px 30px -8px rgba(245,163,10,.7);animation:fadeUp .7s calc(var(--intro) + 1.2s) both,ring 2.4s calc(var(--intro) + 2.2s) infinite;transition:transform .2s var(--ease)}
+.cta:hover{transform:translateY(-3px) scale(1.04)}
+@keyframes ring{0%{box-shadow:0 10px 30px -8px rgba(245,163,10,.7),0 0 0 0 rgba(255,214,102,.55)}70%,100%{box-shadow:0 10px 30px -8px rgba(245,163,10,.7),0 0 0 18px rgba(255,214,102,0)}}
+.hstats{display:flex;gap:28px;margin-top:30px;animation:fadeUp .7s calc(var(--intro) + 1.4s) both}
+.hstats b{display:block;font-family:"Barlow Condensed";font-size:2.5rem;line-height:1;color:#ffd666}
+.hstats small{color:#9fb2bf}
+.hint{position:absolute;bottom:10px;left:50%;z-index:3;font-size:1.6rem;color:#9fb2bf;animation:hint 1.6s infinite}
+@keyframes hint{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+.hero .auth{min-height:0;display:block}
+.hero .auth-card{margin-left:auto;box-shadow:0 30px 80px -20px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.08);animation:pop .7s calc(var(--intro) + .5s) var(--ease) both}
+.hero,.hero .auth-card{--court:#16a34a}
+
+/* Secțiuni sub hero */
+.sec{padding:70px 16px 10px}
+.sec h2{font-size:clamp(2rem,5vw,3rem);text-align:center}
+.lead{text-align:center;color:var(--mut);margin:6px 0 30px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.sc{position:relative;overflow:hidden;border-radius:20px;background:var(--cc);color:#fff;min-height:250px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 18px 40px -22px var(--cc)}
+.sc-ph{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .6s}
+.sc.has-ph .sc-ph{opacity:1}
+.sc.has-ph::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(transparent 30%,rgba(0,0,0,.72))}
+.sc .pitch{position:relative;z-index:2;background:none;box-shadow:none;padding:16px 16px 0}
+.sc.has-ph .pitch{opacity:.6}
+.sc-body{position:relative;z-index:2;display:flex;gap:12px;align-items:center;padding:14px 18px 18px}
+.sc-body>span{font-size:2.2rem}.sc h3{font-size:1.7rem;line-height:1}.sc p{margin:3px 0 0;opacity:.88;font-size:.9rem}
+.rv{opacity:0;transform:translateY(30px);transition:opacity .8s var(--ease) var(--d,0s),transform .8s var(--ease) var(--d,0s)}
+.rv.in{opacity:1;transform:none}
+.sc.in{transition:transform .25s var(--ease),opacity .8s var(--ease) var(--d,0s)}
+.sc:not(.in) .ln{animation-play-state:paused}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.step b{display:block;font-family:"Barlow Condensed";font-size:4.5rem;line-height:1;color:transparent;-webkit-text-stroke:2px #16a34a;opacity:.6}
+.step h3{font-size:1.4rem;margin:6px 0 4px}.step p{margin:0;color:var(--mut)}
+.band{margin-top:60px;background:linear-gradient(120deg,var(--ink),#1d3b4d);color:#fff;text-align:center;padding:54px 16px}
+.band h2{font-size:clamp(2rem,5vw,3rem)}.band p{color:#b9c8d2;margin:6px 0 20px}
+.band .cta{animation:none}
+
+@media (max-width:860px){.hero-grid{grid-template-columns:1fr;padding-top:30px}.hero .auth-card{margin:0 auto}.fb{opacity:.4}}
+@media (prefers-reduced-motion:reduce){
+  *,::before,::after{animation-iteration-count:1!important}
+  .rot i:first-of-type{opacity:1!important;animation:none!important}
+  .rv{opacity:1;transform:none}
+}
+
+/* Poze reale pe terenurile din secțiunea de rezervări (public/img/<teren>.jpg) */
+.court-btn.has-ph{background-image:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.65)),var(--ph);background-size:cover;background-position:center;color:#fff;border-color:transparent;text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.court-btn.on.has-ph{background-image:linear-gradient(color-mix(in srgb,var(--cc) 45%,transparent),color-mix(in srgb,var(--cc) 82%,transparent)),var(--ph);border-color:var(--cc)}
+.pitch.has-ph{background-image:linear-gradient(color-mix(in srgb,var(--court) 35%,transparent),color-mix(in srgb,var(--court) 62%,transparent)),var(--ph);background-size:cover;background-position:center}

@@ -1,4 +1,14 @@
 const $ = s => document.querySelector(s);
+/* ---------- Intro (splash) ---------- */
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let introMs = 0;
+if (document.documentElement.classList.contains('nosplash') || reduceMotion) { const sp = document.getElementById('splash'); if (sp) sp.remove(); }
+else {
+  introMs = 1700; document.documentElement.style.setProperty('--intro', '1.7s');
+  setTimeout(() => $('#splash').classList.add('out'), 1500);
+  setTimeout(() => { const sp = $('#splash'); if (sp) sp.remove(); }, 2600);
+  try { sessionStorage.setItem('splashed', '1'); } catch {}
+}
 const ZILE = ['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
 const LOOK = { // culoare + emoji + desenul terenului (linii animate)
   minifotbal: { c:'#2f7d4f', e:'⚽', svg:`<rect x="10" y="10" width="280" height="160" rx="4"/><path d="M150 10v160"/><circle cx="150" cy="90" r="28"/><path d="M10 55h38v70H10M290 55h-38v70h38"/>` },
@@ -63,10 +73,11 @@ async function start() {
   cfg = await api('/api/config');
   court = court || cfg.courts[0].id;
   day = iso(new Date());
-  $('#auth').hidden = true; $('#main').hidden = false; $('#logout').hidden = false; $('#uname').hidden = false;
+  $('#landing').hidden = true; $('#auth').hidden = true; $('#main').hidden = false; $('#logout').hidden = false; $('#uname').hidden = false;
   $('#uname').textContent = '👤 ' + me.name;
   $('#adminTab').hidden = !me.isAdmin;
   await load();
+  loadCourtPhotos();
   setInterval(() => load(true), 8000); checkUnread(); setInterval(checkUnread, 6000); // actualizare automată: vezi rezervările celorlalți
 }
 async function load(silent) {
@@ -88,9 +99,10 @@ function drawHeader() {
   $('#cname').textContent = c.name;
   $('#cdate').textContent = longDate(day);
   $('#pitch').innerHTML = `<svg viewBox="0 0 300 180">${L.svg.replace(/<(rect|path|circle)(\s+dash)?/g, (m, t, d) => `<${t} class="ln${d ? ' dsh' : ''}" pathLength="1"`)}</svg>`;
+  const pe = $('#pitch'); pe.classList.toggle('has-ph', !!photos[court]); pe.style.setProperty('--ph', photos[court] ? `url(${photos[court]})` : 'none');
 }
 function renderTabs() {
-  $('#courts').innerHTML = cfg.courts.map(c => `<button class="court-btn ${c.id===court?'on':''}" style="--cc:${LOOK[c.id].c}" data-c="${c.id}"><span>${LOOK[c.id].e}</span>${c.name}<small data-n="${c.id}"></small></button>`).join('');
+  $('#courts').innerHTML = cfg.courts.map(c => `<button class="court-btn ${c.id===court?'on':''}${phCls(c.id)}" style="--cc:${LOOK[c.id].c}${phVar(c.id)}" data-c="${c.id}"><span>${LOOK[c.id].e}</span>${c.name}<small data-n="${c.id}"></small></button>`).join('');
 }
 function renderDays() {
   const out = [];
@@ -219,7 +231,7 @@ function setView(v) {
   else render(true);
 }
 function renderRooms() {
-  $('#rooms').innerHTML = cfg.courts.map(c => `<button class="court-btn ${c.id === room ? 'on' : ''}" style="--cc:${LOOK[c.id].c}" data-room="${c.id}"><span>${LOOK[c.id].e}</span>${c.name}<i class="badge" data-rb="${c.id}" hidden></i></button>`).join('');
+  $('#rooms').innerHTML = cfg.courts.map(c => `<button class="court-btn ${c.id === room ? 'on' : ''}${phCls(c.id)}" style="--cc:${LOOK[c.id].c}${phVar(c.id)}" data-room="${c.id}"><span>${LOOK[c.id].e}</span>${c.name}<i class="badge" data-rb="${c.id}" hidden></i></button>`).join('');
   document.documentElement.style.setProperty('--court', LOOK[room].c);
   $('#chatTitle').textContent = 'Grup ' + cfg.courts.find(c => c.id === room).name;
   applyBadges();
@@ -351,9 +363,92 @@ $('#main').addEventListener('submit', async e => {
   } catch (err) { toast(err.message); }
 });
 
+/* ---------- Pagina de întâmpinare (hero animat) ---------- */
+const SHOW = [['minifotbal', 'Minifotbal', '20:30 – 23:00'], ['handbal', 'Handbal', '20:30 – 23:00'], ['baschet', 'Baschet', '20:30 – 23:00'], ['tenis', 'Tenis de câmp', '08:30 – 23:30']];
+const pitchSvg = s => s.replace(/<(rect|path|circle)(\s+dash)?/g, (m, t, d) => `<${t} class="ln${d ? ' dsh' : ''}" pathLength="1"`);
+function artSvg() {
+  const xs = [150, 430, 770, 1050];
+  const towers = xs.map((x, i) => {
+    const t = x < 600 ? x + 150 : x - 150, d = (i * .25).toFixed(2);
+    return `<polygon class="beam" style="--d:${d}s" points="${x - 26},178 ${x + 26},178 ${t + 130},470 ${t - 130},470" fill="url(#bm)"/>
+      <ellipse class="beam" style="--d:${(i * .25 + .3).toFixed(2)}s" cx="${t}" cy="478" rx="150" ry="22" fill="url(#pl)"/>
+      <rect x="${x - 3}" y="176" width="6" height="270" fill="#16232d"/><rect x="${x - 34}" y="150" width="68" height="28" rx="5" fill="#1f313d"/>
+      ${[-24, -8, 8, 24].map(o => `<circle class="lamp" style="--d:${d}s" cx="${x + o}" cy="164" r="5" fill="#fff6d0"/>`).join('')}`;
+  }).join('');
+  return `<svg viewBox="0 0 1200 600" preserveAspectRatio="xMidYMax slice"><defs>
+    <linearGradient id="bm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".6"/><stop offset="1" stop-color="#ffe9a8" stop-opacity=".04"/></linearGradient>
+    <radialGradient id="pl"><stop offset="0" stop-color="#ffe9a8" stop-opacity=".45"/><stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/></radialGradient></defs>
+    <rect y="440" width="1200" height="160" fill="#0c2a1a"/>
+    <g stroke-linecap="round"><path class="gl" pathLength="1" d="M0 440H1200M0 520H1200M600 440V600M60 600L480 440M1140 600L720 440"/><ellipse class="gl" pathLength="1" cx="600" cy="520" rx="190" ry="46"/></g>${towers}</svg>`;
+}
+const probe = src => new Promise(res => { const i = new Image(); i.onload = () => res(src); i.onerror = () => res(null); i.src = src; });
+async function loadPhotos() {
+  // Poze opționale: public/img/hero1.jpg ... hero6.jpg (fundal hero) și minifotbal.jpg / handbal.jpg / baschet.jpg / tenis.jpg (carduri)
+  const hero = (await Promise.all([1, 2, 3, 4, 5, 6].map(n => probe(`img/hero${n}.jpg`)))).filter(Boolean);
+  if (hero.length) {
+    const box = $('#heroPhotos');
+    box.innerHTML = hero.map(s => `<div class="ph" style="background-image:url(${s})"></div>`).join('');
+    $('#hero').classList.add('has-photos');
+    const layers = [...box.children]; let k = 0;
+    setTimeout(() => layers[0].classList.add('on'), 60);            // prima poză apare lin
+    if (layers.length > 1) setInterval(() => {
+      if (document.hidden) return;
+      const cur = layers[k], nxt = layers[(k + 1) % layers.length];
+      box.querySelectorAll('.prev').forEach(e => e.classList.remove('prev'));
+      cur.classList.replace('on', 'prev');                           // cea veche rămâne vizibilă dedesubt
+      nxt.classList.add('on');                                       // cea nouă apare lin deasupra
+      setTimeout(() => cur.classList.remove('prev'), 1900);          // o scoatem abia după ce cea nouă s-a așezat
+      k = (k + 1) % layers.length;
+    }, 7000);
+  }
+  for (const [id] of SHOW) {
+    const s = await probe(`img/${id}.jpg`), card = document.querySelector(`.sc[data-c="${id}"]`);
+    if (s && card) { card.querySelector('.sc-ph').style.backgroundImage = `url(${s})`; card.classList.add('has-ph'); }
+  }
+}
+let landed = false;
+function showLanding() { $('#landing').hidden = false; $('#auth').hidden = false; initLanding(); }
+function initLanding() {
+  if (landed) return; landed = true;
+  const hero = $('#hero');
+  $('#art').innerHTML = artSvg();
+  $('#stars').innerHTML = Array.from({ length: 70 }, () => `<i style="left:${(Math.random() * 100).toFixed(1)}%;top:${(Math.random() * 55).toFixed(1)}%;--s:${(1 + Math.random() * 2).toFixed(1)}px;--d:${(Math.random() * 4).toFixed(1)}s"></i>`).join('');
+  // titlul apare literă cu literă
+  let n = 0;
+  document.querySelectorAll('.split').forEach(el => {
+    el.innerHTML = el.textContent.split(' ').map(w => `<span class="w">${[...w].map(ch => `<span style="--i:${n++}">${ch}</span>`).join('')}</span>`).join(' ');
+  });
+  $('#showcase').innerHTML = SHOW.map(([id, name, hrs], i) => `<article class="sc rv" data-c="${id}" style="--cc:${LOOK[id].c};--d:${i * 90}ms"><div class="sc-ph"></div><div class="pitch"><svg viewBox="0 0 300 180">${pitchSvg(LOOK[id].svg)}</svg></div><div class="sc-body"><span>${LOOK[id].e}</span><div><h3>${name}</h3><p>${hrs} · în fiecare zi</p></div></div></article>`).join('');
+  // contoare + apariție la derulare
+  const count = el => { const to = +el.dataset.n, t0 = performance.now(); const f = t => { const p = Math.min(1, (t - t0) / 1400); el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .2 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  setTimeout(() => document.querySelectorAll('.hstats [data-n]').forEach(count), Math.max(0, introMs + 1300 - performance.now()));
+  if (!reduceMotion) {
+    hero.addEventListener('mousemove', e => { const r = hero.getBoundingClientRect(); hero.style.setProperty('--mx', ((e.clientX - r.left) / r.width - .5).toFixed(3)); hero.style.setProperty('--my', ((e.clientY - r.top) / r.height - .5).toFixed(3)); });
+    hero.addEventListener('mouseleave', () => { hero.style.setProperty('--mx', 0); hero.style.setProperty('--my', 0); });
+    document.querySelectorAll('.sc').forEach(c => {
+      c.addEventListener('mousemove', e => { const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; c.style.transform = `perspective(700px) rotateY(${x * 12}deg) rotateX(${-y * 12}deg) translateY(-6px)`; });
+      c.addEventListener('mouseleave', () => { c.style.transform = ''; });
+    });
+  }
+  document.querySelectorAll('[data-go="auth"]').forEach(b => b.onclick = () => { $('#auth').scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => $('#form').email.focus({ preventScroll: true }), 700); });
+  loadPhotos();
+}
+
+/* ---------- Poze pentru terenurile din secțiunea de rezervări ---------- */
+const photos = {};                                    // id teren -> adresa pozei (dacă există în public/img/)
+const phCls = id => photos[id] ? ' has-ph' : '';
+const phVar = id => photos[id] ? `;--ph:url(${photos[id]})` : '';
+async function loadCourtPhotos() {
+  await Promise.all(Object.keys(LOOK).map(async id => { const s = await probe(`img/${id}.jpg`); if (s) photos[id] = s; }));
+  if (!Object.keys(photos).length) return;
+  if (!$('#bookView').hidden) render(true); else renderRooms();
+}
+
 /* ---------- Start ---------- */
 (async () => {
-  if (resetToken) { $('#auth').hidden = false; setMode('reset'); return; }
+  if (resetToken) { showLanding(); setMode('reset'); return; }
   try { me = await api('/api/me'); await start(); }
-  catch { $('#auth').hidden = false; }
+  catch { showLanding(); }
 })();
