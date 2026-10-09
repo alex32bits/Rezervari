@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
@@ -17,12 +19,11 @@ const ADMIN = {
   phone: process.env.ADMIN_PHONE || '+40 745324567',
   email: process.env.ADMIN_EMAIL || 'admin@baza-sportiva.ro',
 };
-// Conturile cu aceste adrese de email sunt administratori (separate prin virgulă).
-// IMPORTANT: creează-ți contul de administrator imediat după prima pornire.
+// Conturile cu admini
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || ADMIN.email).split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
 const isAdmin = u => ADMIN_EMAILS.includes(u.email);
 
-// ---- Terenuri și intervale (o singură sursă de adevăr, folosită și de client) ----
+//  Terenuri și intervale 
 const hm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
 const tennis = [];
 for (let m = 8 * 60 + 30; m < 23 * 60 + 30; m += 90) tennis.push([hm(m), hm(m + 90)]);
@@ -34,7 +35,7 @@ const COURTS = [
   { id: 'tenis', name: 'Tenis de câmp', slots: tennis },
 ];
 
-// ---- Baza de date SQLite (un singur fișier: baza.db) ----
+// Baza de date SQLite (un singur fișier: baza.db) 
 const db = new Database(DB_FILE);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
@@ -68,7 +69,7 @@ const nowKey = () => { const d = new Date(); return `${isoDate(d)}T${pad(d.getHo
 const BOOKINGS = `SELECT b.id, b.court, b.date, b.start, b.stop AS "end", b.uid, b.at, u.name, u.email
                   FROM bookings b JOIN users u ON u.id = b.uid`;
 
-// Curățenie zilnică: rezervări/blocări mai vechi de 90 de zile și linkuri de resetare expirate
+// rezervari/blocari mai vechi de 90 de zile si linkuri de resetare expirate
 const cleanup = () => {
   db.prepare("DELETE FROM bookings WHERE date < date('now','-90 days')").run();
   db.prepare("DELETE FROM blocks WHERE date < date('now','-90 days')").run();
@@ -76,13 +77,13 @@ const cleanup = () => {
 };
 cleanup(); setInterval(cleanup, 864e5).unref();
 
-// ---- Server HTTP + API REST ----
+// Server HTTP + API REST 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware pentru autentificare: verifică tokenul JWT din cookie și atașează userul la req.user
+// Middleware pentru autentificare: verifica tokenul JWT din cookie si atasează userul la req.user
 const auth = (req, res, next) => {
   try {
     const { id, ver } = jwt.verify(req.cookies.token, SECRET);
@@ -97,7 +98,7 @@ const login = (res, user) => {
   res.cookie('token', token, { httpOnly: true, sameSite: 'lax', maxAge: 30 * 864e5 });
   res.json({ id: user.id, name: user.name, isAdmin: isAdmin(user) });
 };
-// ---- Rute API pentru clientul web ----
+//  Rute API pentru clientul web 
 app.post('/api/register', (req, res) => {
   const { name = '', email = '', password = '' } = req.body;
   if (name.trim().length < 2) return res.status(400).json({ error: 'Introdu un nume (minim 2 caractere).' });
@@ -152,7 +153,7 @@ app.delete('/api/bookings/:id', auth, (req, res) => {
   res.json({ ok: true });
 });
 
-// ---- Chat pe grupuri: câte un grup pentru fiecare sport ----
+//  Chat pe grupuri: cate un grup pentru fiecare sport
 const inRoom = (req, res, next) => COURTS.some(c => c.id === req.params.room) ? next() : res.status(404).json({ error: 'Grup inexistent.' });
 app.get('/api/chat/:room', auth, inRoom, (req, res) => {
   res.json(db.prepare(`SELECT id, room, uid, name, text, at FROM
@@ -190,7 +191,7 @@ app.get('/api/chat-unread', auth, (req, res) => {
   res.json({ now, counts });
 });
 
-// ---- Contact administrator ----
+//  Contact administrator 
 app.get('/api/contact-info', (req, res) => res.json(ADMIN));
 app.post('/api/contact', auth, (req, res) => {
   const text = String(req.body.message || '').trim();
@@ -203,7 +204,7 @@ app.post('/api/contact', auth, (req, res) => {
   res.status(201).json({ ok: true });
 });
 
-// ---- Resetare parolă ----
+//  Resetare parola
 let mailer = null;
 if (process.env.SMTP_HOST) {
   try {
@@ -236,7 +237,7 @@ app.post('/api/forgot', async (req, res) => {
       } catch (e) { console.error('Eroare la trimiterea emailului:', e.message); }
     } else console.log(`[RESETARE PAROLĂ] ${user.email}: ${link}`);
   }
-  res.json({ ok: true }); // același răspuns indiferent dacă emailul există
+  res.json({ ok: true }); 
 });
 app.post('/api/reset', (req, res) => {
   const { token = '', password = '' } = req.body;

@@ -3,3 +3,4 @@ baza.db
 baza.db-wal
 baza.db-shm
 data.json
+.env
